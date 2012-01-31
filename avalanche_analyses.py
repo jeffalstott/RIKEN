@@ -3,7 +3,7 @@ from avalanchetoolbox import database as db
 import h5py
 import os
 
-from Helix_database import Session
+from Helix_database import Session, database_url
 session = Session()
 cluster=True
 analyses_directory = '/home/alstottj/biowulf/analyses/'
@@ -152,7 +152,7 @@ for fname in dirList:
                     time_scales=time_scales, cascade_methods=cascade_methods,\
                     given_xmin_xmax=given_xmin_xmax,\
                     spatial_samples=spatial_samples, temporal_samples=temporal_samples,\
-                    session=session, database_url=db.database_url,\
+                    session=session, database_url=database_url,\
                     subject_id=subject.id, task_id=task.id, experiment_id=experiment.id,\
                     sensor_id=sensor.id, recording_id=recording.id, filter_id=filter.id,\
                     cluster=cluster, swarms_directory=swarms_directory, analyses_directory=analyses_directory,\
