@@ -1,9 +1,10 @@
-import avalanches
+from avalanchetoolbox import avalanches
+from avalanchetoolbox import database as db
 import h5py
 import os
 
-import Helix_database as db
-session = db.Session()
+from Helix_database import Session
+session = Session()
 cluster=True
 analyses_directory = '/home/alstottj/biowulf/analyses/'
 swarms_directory = '/home/alstottj/biowulf/swarms/'
