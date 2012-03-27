@@ -5,21 +5,20 @@ import os
 
 from Helix_database import Session, database_url
 session = Session()
-cluster=True
-analyses_directory = '/home/alstottj/biowulf/analyses/'
 swarms_directory = '/home/alstottj/biowulf/swarms/'
 python_location= '/usr/local/Python/2.7.2/bin/python'
 
-time_scales = [1, 2, 3, 4, 5, 6, 7, 8, 16, 32]
-threshold_mode = 'Likelihood'
-threshold_levels = [2, 5, 10]
-threshold_directions = ['both']
-given_xmin_xmax = [(None, None), (1, None), (1, 'channels')]
-event_signals = ['displacement']
-event_detections = ['local_extrema']#, 'local', 'excursion_extrema']
-cascade_methods = ['grid']
-spatial_samples = [('all', 'all')]
-temporal_samples = [('all', 'all')]
+analyses = avalanches.Analyses(database_url, verbose=True)
+analyses.time_scales = [1, 2, 3, 4, 5, 6, 7, 8, 16, 32]
+analyses.threshold_mode = 'Likelihood'
+analyses.threshold_levels = [2, 5, 10]
+analyses.threshold_directions = ['both']
+#given_xmin_xmax = [(None, None), (1, None), (1, 'channels')]
+analyses.vent_signals = ['displacement']
+analyses.event_detections = ['local_extrema']#, 'local', 'excursion_extrema']
+analyses.cascade_methods = ['grid']
+analyses.spatial_samples = [('all', 'all')]
+analyses.temporal_samples = [('all', 'all')]
 
 
 sampling_rate = 1000.0
@@ -28,18 +27,17 @@ data_path = '/data/alstottj/RIKEN/For_Analysis/'
 filter_type = 'FIR'
 taps = 25
 window = 'hamming'
-ds_rate = 200.0
+ds_rate = 1000.0
 transd = True
 mains = 50
 
 visits = ['', '0', '1','2','3','4','5','6','7','8']
-#visits = ['']
 tasks = ['food_tracking', \
         'visual_grating',\
         'visual_grating',
         'emotional_movie', \
-        'social_competition']
-#tasks = ['rest'] #, 'anesthetized', 'sleep_wake_transition']
+        'social_competition',\
+        'rest', 'anesthetized', 'sleep_wake_transition']
 
 rem=False
 rest='rested'
@@ -53,8 +51,6 @@ for fname in dirList:
     number_in_group = f.attrs['number_in_group']
     species = f.attrs['species']
     location = f.attrs['location']
-    if number_in_group=='K2':
-        continue
 
     subject = session.query(db.Subject).\
             filter_by(species=species, group_name=group_name, name=number_in_group).first()
@@ -146,17 +142,8 @@ for fname in dirList:
                 session.add(filter)
                 session.commit()
 
-            avalanches.avalanche_analyses(f.file.filename, HDF5_group=base_filtered+'/'+band,\
-                    threshold_mode=threshold_mode, threshold_levels=threshold_levels, threshold_directions=threshold_directions,\
-                    event_signals=event_signals, event_detections=event_detections,\
-                    time_scales=time_scales, cascade_methods=cascade_methods,\
-                    given_xmin_xmax=given_xmin_xmax,\
-                    spatial_samples=spatial_samples, temporal_samples=temporal_samples,\
-                    session=session, database_url=database_url,\
-                    subject_id=subject.id, task_id=task.id, experiment_id=experiment.id,\
-                    sensor_id=sensor.id, recording_id=recording.id, filter_id=filter.id,\
-                    cluster=cluster, swarms_directory=swarms_directory, analyses_directory=analyses_directory,\
-                    python_location=python_location,\
-                    verbose=True)
+            analyses.filename = f.file.filename
+            analyses.HDF5_group = base_filtered+'/'+band
+            analyses.submit(filter.id, memory_requirement=8)
 session.close()
 session.bind.dispose()
